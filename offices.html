@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offices to Rent — Business First</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .page-hero { background: linear-gradient(135deg, #0D2B25 0%, #1A3832 100%); padding: 70px 40px; color: var(--white); }
+    .page-hero h1 { color: var(--white); margin-bottom: 12px; }
+    .page-hero p { color: rgba(255,255,255,0.7); font-size: 17px; max-width: 520px; }
+
+    .benefits-strip {
+      background: var(--teal);
+      padding: 20px 40px;
+    }
+    .benefits-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .benefit-item { color: var(--white); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+
+    /* Form section */
+    .form-section {
+      background: var(--light);
+      padding: 60px 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-box {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 700px;
+      margin: 0 auto;
+      box-shadow: 0 4px 24px rgba(26,155,140,0.08);
+    }
+
+    .form-box h2 { margin-bottom: 8px; }
+    .form-box > p { color: var(--mid); margin-bottom: 32px; font-size: 15px; }
+
+    .grid-3-form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    /* Results section */
+    .results-section { padding: 60px 40px; }
+
+    .match-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .match-header h2 { margin-bottom: 8px; }
+    .match-header p { color: var(--mid); font-size: 16px; }
+
+    .office-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .office-card:hover { box-shadow: 0 12px 40px rgba(26,155,140,0.14); transform: translateY(-4px); }
+
+    .office-card.selected { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(26,155,140,0.15); }
+
+    .office-card .select-indicator {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+      z-index: 2;
+    }
+
+    .office-card.selected .select-indicator { background: var(--teal); border-color: var(--teal); color: var(--white); }
+
+    .office-card img { width: 100%; height: 220px; object-fit: cover; }
+
+    .office-card-body { padding: 24px; }
+    .office-card-body h3 { margin-bottom: 6px; }
+
+    .office-price {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--teal);
+      margin: 12px 0 4px;
+    }
+
+    .office-price span { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400; color: var(--mid); }
+
+    /* Confirm interest panel */
+    .confirm-interest {
+      background: var(--dark);
+      border-radius: 20px;
+      padding: 32px;
+      color: var(--white);
+      margin-top: 40px;
+      display: none;
+    }
+
+    .confirm-interest.visible { display: block; }
+    .confirm-interest h3 { color: var(--white); margin-bottom: 8px; }
+    .confirm-interest p { color: rgba(255,255,255,0.7); margin-bottom: 20px; font-size: 15px; }
+
+    .selected-rooms-list {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .selected-room-tag {
+      background: rgba(26,155,140,0.3);
+      border: 1px solid rgba(26,155,140,0.5);
+      color: #7BE8DA;
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Success */
+    .success-banner {
+      background: #E8F8EF;
+      border: 1px solid #B2E4C8;
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      display: none;
+    }
+
+    .success-banner.visible { display: block; }
+    .success-banner h2 { color: #1E6E3C; margin-bottom: 12px; }
+    .success-banner p { color: #2D8A54; font-size: 16px; }
+  
+    /* Login dropdown */
+    .login-dropdown { position: relative; }
+    .login-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      min-width: 180px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      z-index: 1000;
+    }
+    .login-dropdown.open .login-dropdown-menu { display: block; }
+    .login-dropdown-menu a {
+      display: block;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--dark);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      transition: all 0.15s;
+    }
+    .login-dropdown-menu a:last-child { border-bottom: none; }
+    .login-dropdown-menu a:hover { background: var(--teal-light); color: var(--teal-dark); }
+    .login-dropdown-menu .admin-link { color: var(--mid); font-size: 13px; }
+
+  
+    html, body { overflow-x: hidden; max-width: 100%; }
+    @media (max-width: 768px) {
+      .page-hero { padding: 56px 20px 40px !important; }
+      .page-hero h1 { font-size: 30px !important; line-height: 1.15 !important; }
+      .page-hero p { font-size: 15px !important; }
+      .grid-3 { grid-template-columns: 1fr !important; }
+      .grid-2 { grid-template-columns: 1fr !important; }
+      .section { padding: 40px 20px !important; }
+      .section-sm { padding: 28px 20px !important; }
+      .form-section { padding: 40px 20px !important; }
+      .form-box { padding: 24px 20px !important; }
+      .grid-3-form { grid-template-columns: 1fr !important; gap: 0 !important; }
+      .benefits-strip { padding: 16px 20px !important; }
+      .benefits-inner { flex-wrap: wrap !important; gap: 8px !important; }
+      .results-section { padding: 40px 20px !important; }
+      .confirm-interest { padding: 24px 20px !important; }
+      [style*="grid-template-columns:1fr 1fr 1fr"] { grid-template-columns: 1fr !important; display: block !important; }
+      [style*="grid-template-columns:2fr 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; display: block !important; }
+      footer { padding: 40px 20px 0 !important; }
+      .footer-grid { grid-template-columns: 1fr !important; }
+      .footer-bottom { flex-direction: column !important; text-align: center !important; }
+      .page-hero { padding: 48px 20px 36px !important; }
+      .page-hero h1 { font-size: 26px !important; }
+      [style*="padding:60px 40px"], [style*="padding: 60px 40px"] { padding: 40px 20px !important; }
+      [style*="grid-template-columns:2fr 1fr 1fr 1fr"] { display: block !important; }
+      [style*="grid-template-columns:2fr 1fr 1fr 1fr"] > * { margin-bottom: 24px !important; }
+      .enquiry-form { padding: 24px 18px !important; }
+
+    }
+  </style>
+</head>
+<body>
+
+<div class="demo-banner">
+  ⚡ DEMO — Built by Launchpad Digital Solutions for Business First Workspace — For demonstration purposes only
+</div>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    <img src="https://via.placeholder.com/255x86/1a1a2e/6366f1?text=Launchpad" alt="Business First">
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="rooms.html">Rooms for Hire</a></li>
+    <li><a href="offices.html" class="active">Offices to Rent</a></li>
+    <li><a href="virtual-office.html">Virtual Office</a></li>
+    <li><a href="community.html">Our Community</a></li>
+    <li><a href="projects.html">Our Projects</a></li>
+    <li><a href="contact.html?from=office">Contact</a></li>
+    <li class="login-dropdown" id="loginDropdown">
+    <button class="login-dropdown-btn" onclick="event.stopPropagation();document.getElementById('loginDropdown').classList.toggle('open')">Login ▾</button>
+    <div class="login-dropdown-menu">
+      <a href="tenant.html">Tenant Portal</a>
+      <a href="virtual-tenant.html">Virtual Office Portal</a>
+      <a href="admin.html" class="staff-link">Staff Dashboard</a>
+    </div>
+  </li>
+  </ul>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Hero -->
+<section class="page-hero">
+  <div class="container">
+    <div class="section-label" style="color:var(--teal);">Offices to rent</div>
+    <h1>Your own space<br>at Burnley HQ</h1>
+    <p>Private offices across two buildings. All-inclusive rates, flexible terms, and a community of like-minded businesses around you.</p>
+  </div>
+</section>
+
+<!-- Benefits -->
+<div class="benefits-strip">
+  <div class="benefits-inner">
+    <div class="benefit-item">✓ 24-hour access</div>
+    <div class="benefit-item">✓ Broadband included</div>
+    <div class="benefit-item">✓ Utilities included</div>
+    <div class="benefit-item">✓ Free car parking</div>
+    <div class="benefit-item">✓ Meeting room access</div>
+    <div class="benefit-item">✓ Social media promotion</div>
+    <div class="benefit-item">✓ Business support</div>
+  </div>
+</div>
+
+<!-- Interest form -->
+<section class="form-section">
+  <div class="form-box">
+    <h2>Find your office</h2>
+    <p>Tell us about your business and we'll show you the available offices that match your needs.</p>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Your name</label>
+        <input type="text" id="f-name" placeholder="Jane Smith">
+      </div>
+      <div class="form-group">
+        <label>Business name</label>
+        <input type="text" id="f-biz" placeholder="Smith & Co Ltd">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="jane@company.co.uk">
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="f-phone" placeholder="07700 000000">
+      </div>
+    </div>
+
+    <div class="grid-3-form">
+      <div class="form-group">
+        <label>Business type</label>
+        <select id="f-type">
+          <option>Select...</option>
+          <option>Professional Services</option>
+          <option>Technology</option>
+          <option>Healthcare</option>
+          <option>Creative</option>
+          <option>Retail / Trade</option>
+          <option>Charity / CIC</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Team size</label>
+        <select id="f-headcount">
+          <option>1 person</option>
+          <option>2–3 people</option>
+          <option>4–6 people</option>
+          <option>7+ people</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Monthly budget</label>
+        <select id="f-budget">
+          <option>Under £200</option>
+          <option>£200–£300</option>
+          <option>£300–£400</option>
+          <option>£400+</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Preferred move-in</label>
+      <select id="f-movein">
+        <option>As soon as possible</option>
+        <option>Within 1 month</option>
+        <option>1–3 months</option>
+        <option>3+ months</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Anything else you need?</label>
+      <textarea id="f-notes" placeholder="Wheelchair access, ground floor, specific equipment..."></textarea>
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg" onclick="findOffices()">Show matching offices →</button>
+  </div>
+</section>
+
+<!-- Results -->
+<section class="results-section" id="resultsSection" style="display:none;">
+  <div class="container">
+    <div class="match-header">
+      <div class="section-label">Matched for you</div>
+      <h2 id="matchTitle">Offices matching your requirements</h2>
+      <p id="matchSubtitle">Based on your team size and budget. Select the offices you're interested in.</p>
+    </div>
+
+    <div class="grid-3" id="officesGrid"></div>
+
+    <div style="text-align:center;margin-top:24px;">
+      <button class="btn btn-outline" onclick="showAll()">Show all available offices</button>
+    </div>
+
+    <div class="confirm-interest" id="confirmPanel">
+      <h3> Ready to arrange viewings?</h3>
+      <p>You've selected <span id="selectedCount">0</span> office(s). We'll get back to you within one working day to arrange viewings.</p>
+      <div class="selected-rooms-list" id="selectedList"></div>
+      <button class="btn btn-gold btn-lg" onclick="submitInterest()">Submit interest & book viewings →</button>
+    </div>
+
+    <div class="success-banner" id="successBanner">
+      <div style="font-size:48px;margin-bottom:16px;"></div>
+      <h2>Interest registered!</h2>
+      <p>Thanks <strong id="s-name"></strong> — we'll be in touch within one working day to arrange viewings of your selected offices.</p>
+      <br>
+      <p style="font-size:14px;">A confirmation has been sent to <strong id="s-email"></strong></p>
+    </div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/supabase-maintenance.js"></script>
+<script>
+  let selectedOffices = [];
+
+  function findOffices() {
+    const name = document.getElementById('f-name').value;
+    const email = document.getElementById('f-email').value;
+    if (!name || !email) { alert('Please enter your name and email'); return; }
+
+    const budget = document.getElementById('f-budget').value;
+    const headcount = document.getElementById('f-headcount').value;
+
+    let maxBudget = 9999;
+    if (budget === 'Under £200') maxBudget = 200;
+    else if (budget === '£200–£300') maxBudget = 300;
+    else if (budget === '£300–£400') maxBudget = 400;
+
+    let maxCap = 99;
+    if (headcount === '1 person') maxCap = 2;
+    else if (headcount === '2–3 people') maxCap = 4;
+    else if (headcount === '4–6 people') maxCap = 7;
+
+    const matched = HP.offices.filter(o => o.status === 'vacant' && o.price <= maxBudget);
+    renderOffices(matched.length > 0 ? matched : HP.offices.filter(o => o.status === 'vacant'));
+
+    const bizName = document.getElementById('f-biz').value || 'your business';
+    document.getElementById('matchTitle').textContent = `${matched.length} office${matched.length !== 1 ? 's' : ''} matched for ${bizName}`;
+    document.getElementById('matchSubtitle').textContent = matched.length > 0
+      ? 'Select the ones you\'d like to view — we\'ll arrange everything.'
+      : 'No exact matches — showing all available offices. Contact us to discuss your requirements.';
+
+    document.getElementById('resultsSection').style.display = 'block';
+    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function renderOffices(offices) {
+    document.getElementById('officesGrid').innerHTML = offices.map(o => `
+      <div class="office-card ${selectedOffices.includes(o.id) ? 'selected' : ''}" id="office-${o.id}">
+        <div class="select-indicator" onclick="toggleSelect(${o.id})">
+          ${selectedOffices.includes(o.id) ? '✓' : ''}
+        </div>
+        <img src="${o.photo}" alt="${o.name}" onerror="this.src='https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80'">
+        <div class="office-card-body">
+          <span class="tag tag-teal">${o.building}</span>
+          <h3 style="margin-top:8px;">${o.name}</h3>
+          <div class="room-meta">
+            <span> Up to ${o.capacity} people</span>
+            <span> ${o.size}m²</span>
+          </div>
+          <div class="amenities">
+            ${o.amenities.slice(0,3).map(a => `<span class="amenity">${a}</span>`).join('')}
+            ${o.amenities.length > 3 ? `<span class="amenity">+${o.amenities.length-3} more</span>` : ''}
+          </div>
+          <p style="font-size:13px;color:var(--mid);margin:10px 0;">${o.description}</p>
+          <div class="office-price">£${o.price}<span>/month</span></div>
+          <p style="font-size:12px;color:var(--mid);">All inclusive — broadband, utilities, parking</p>
+          <br>
+          <button class="btn btn-outline btn-full" onclick="toggleSelect(${o.id})">
+            ${selectedOffices.includes(o.id) ? '✓ Selected — click to deselect' : 'I\'m interested in this →'}
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function showAll() {
+    renderOffices(HP.offices.filter(o => o.status === 'vacant'));
+    document.getElementById('matchTitle').textContent = 'All available offices';
+  }
+
+  function toggleSelect(id) {
+    if (selectedOffices.includes(id)) {
+      selectedOffices = selectedOffices.filter(i => i !== id);
+    } else {
+      selectedOffices.push(id);
+    }
+    const offices = HP.offices.filter(o => o.status === 'vacant');
+    renderOffices(offices);
+    updateConfirmPanel();
+  }
+
+  function updateConfirmPanel() {
+    const panel = document.getElementById('confirmPanel');
+    if (selectedOffices.length > 0) {
+      panel.classList.add('visible');
+      document.getElementById('selectedCount').textContent = selectedOffices.length;
+      const selected = HP.offices.filter(o => selectedOffices.includes(o.id));
+      document.getElementById('selectedList').innerHTML = selected.map(o =>
+        `<span class="selected-room-tag"> ${o.name} — £${o.price}/mo</span>`
+      ).join('');
+    } else {
+      panel.classList.remove('visible');
+    }
+  }
+
+  async function submitInterest() {
+    const name = document.getElementById('f-name').value;
+    const email = document.getElementById('f-email').value;
+    const biz = document.getElementById('f-biz').value;
+    const phone = document.getElementById('f-phone').value;
+    const bizType = document.getElementById('f-type').value;
+    const headcount = document.getElementById('f-headcount').value;
+    const budget = document.getElementById('f-budget').value;
+    const moveIn = document.getElementById('f-movein').value;
+
+    const selected = HP.offices.filter(o => selectedOffices.includes(o.id)).map(o => o.name);
+
+    await HP_PROSPECTS.insert({
+      name, email,
+      business: biz,
+      phone,
+      business_type: bizType,
+      headcount,
+      budget,
+      move_in: moveIn,
+      interested_rooms: selected,
+      status: 'new'
+    });
+
+    document.getElementById('s-name').textContent = name;
+    document.getElementById('s-email').textContent = email;
+    document.getElementById('confirmPanel').style.display = 'none';
+    document.querySelector('.grid-3').style.display = 'none';
+    document.querySelector('[onclick="showAll()"]').style.display = 'none';
+    document.getElementById('successBanner').classList.add('visible');
+    document.getElementById('successBanner').scrollIntoView({ behavior: 'smooth' });
+  }
+</script>
+
+
+<script>
+  document.addEventListener('click', function(e) {
+    const dd = document.getElementById('loginDropdown');
+    if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+  });
+</script>
+
+<script src="js/bug-report.js"></script>
+<footer style="background:var(--dark,#1A1A2E);padding:60px 40px 0;color:rgba(255,255,255,0.7);">
+  <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;padding-bottom:48px;">
+    <div>
+      <img src="https://via.placeholder.com/255x86/1a1a2e/6366f1?text=Launchpad" alt="Business First" style="height:40px;margin-bottom:16px;">
+      <p style="font-size:14px;line-height:1.7;">Business First — Serviced offices, hot desks and virtual offices across the UK.</p>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <a href="https://www.facebook.com/business-first/" target="_blank" title="Facebook"
+           style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.7);transition:all 0.2s;"
+           onmouseover="this.style.background='#1877F2';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.7)'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+        <a href="https://x.com/business-first_cic" target="_blank" title="X (Twitter)"
+           style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.7);transition:all 0.2s;"
+           onmouseover="this.style.background='#000';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.7)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div style="font-size:14px;">
+      <h4 style="color:#fff;margin-bottom:16px;font-size:15px;">Services</h4>
+      <a href="rooms.html" style="display:block;color:rgba(255,255,255,0.6);text-decoration:none;margin-bottom:10px;">Rooms for Hire</a>
+      <a href="offices.html" style="display:block;color:rgba(255,255,255,0.6);text-decoration:none;margin-bottom:10px;">Offices to Rent</a>
+      <a href="virtual-office.html" style="display:block;color:rgba(255,255,255,0.6);text-decoration:none;margin-bottom:10px;">Virtual Office</a>
+    </div>
+    <div style="font-size:14px;">
+      <h4 style="color:#fff;margin-bottom:16px;font-size:15px;">Organisation</h4>
+      <a href="projects.html" style="display:block;color:rgba(255,255,255,0.6);text-decoration:none;margin-bottom:10px;">Our Projects</a>
+      <a href="community.html" style="display:block;color:rgba(255,255,255,0.6);text-decoration:none;margin-bottom:10px;">Our Community</a>
+      <a href="contact.html" style="display:block;color:rgba(255,255,255,0.6);text-decoration:none;margin-bottom:10px;">Contact</a>
+    </div>
+    <div style="font-size:14px;">
+      <h4 style="color:#fff;margin-bottom:16px;font-size:15px;">Tenants</h4>
+      <a href="tenant.html" style="display:block;color:rgba(255,255,255,0.6);text-decoration:none;margin-bottom:10px;">Tenant Portal</a>
+      <a href="virtual-tenant.html" style="display:block;color:rgba(255,255,255,0.6);text-decoration:none;margin-bottom:10px;">Virtual Tenant</a>
+    </div>
+  </div>
+  <div style="border-top:1px solid rgba(255,255,255,0.08);padding:20px 0;max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:13px;color:rgba(255,255,255,0.4);">© 2026 Business First Workspace — launchpadme.co.uk</span>
+    <span style="color:rgba(255,255,255,0.3);font-size:11px;">Demo built by <a href="https://launchpadme.co.uk" style="color:#1A9B8C;">Launchpad Digital Solutions</a></span>
+  </div>
+</footer>
+<script>
+  // Hamburger nav
+  (function(){
+    var btn = document.getElementById("navHamburger");
+    var links = document.querySelector(".nav-links");
+    if(!btn || !links) return;
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      links.classList.toggle("open");
+      btn.classList.toggle("open");
+    });
+    document.addEventListener("click", function(e){
+      if(!btn.contains(e.target) && !links.contains(e.target)){
+        links.classList.remove("open");
+        btn.classList.remove("open");
+      }
+    });
+  })();
+</script>
+<script src="js/gate.js"></script>
+</body>
+</html>
+
