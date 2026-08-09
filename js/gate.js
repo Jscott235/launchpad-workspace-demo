@@ -1,0 +1,152 @@
+(function() {
+  const BRAND = 'Business First';
+  const PIN = '2612';
+  const SESSION_KEY = 'lp_demo_access';
+
+  if (sessionStorage.getItem(SESSION_KEY) === 'granted') return;
+
+  // Build gate overlay
+  const style = document.createElement('style');
+  style.textContent = `
+    #lp-gate {
+      position: fixed; inset: 0; z-index: 99999;
+      background: #0f0f1a;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Inter', sans-serif;
+    }
+    #lp-gate-box {
+      background: #1a1a2e;
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 380px;
+      margin: 20px;
+    }
+    #lp-gate-logo {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6366f1;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    #lp-gate-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    #lp-gate-sub {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+    #lp-gate label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+    #lp-gate input {
+      width: 100%;
+      background: #0f0f1a;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #ffffff;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      box-sizing: border-box;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #lp-gate input:focus {
+      border-color: #6366f1;
+    }
+    #lp-gate input.error {
+      border-color: #ef4444;
+    }
+    #lp-gate-btn {
+      width: 100%;
+      background: #6366f1;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #lp-gate-btn:hover { background: #4f46e5; }
+    #lp-gate-err {
+      font-size: 12px;
+      color: #ef4444;
+      margin-top: 10px;
+      display: none;
+      text-align: center;
+    }
+    #lp-gate-footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #374151;
+      text-align: center;
+    }
+  `;
+  document.head.appendChild(style);
+
+  const gate = document.createElement('div');
+  gate.id = 'lp-gate';
+  gate.innerHTML = `
+    <div id="lp-gate-box">
+      <div id="lp-gate-logo">Launchpad Digital Solutions</div>
+      <div id="lp-gate-title">Demo Access</div>
+      <div id="lp-gate-sub">Enter your organisation name and access PIN to view this demonstration.</div>
+      <label for="lp-brand-input">Organisation Name</label>
+      <input type="text" id="lp-brand-input" placeholder="e.g. Business First" autocomplete="off">
+      <label for="lp-pin-input">Access PIN</label>
+      <input type="password" id="lp-pin-input" placeholder="••••" maxlength="4" autocomplete="off">
+      <button id="lp-gate-btn" onclick="lpGateSubmit()">Enter Demo →</button>
+      <div id="lp-gate-err">Incorrect details. Please try again.</div>
+      <div id="lp-gate-footer">Built by Launchpad Digital Solutions · launchpadme.co.uk</div>
+    </div>
+  `;
+  document.body.appendChild(gate);
+
+  window.lpGateSubmit = function() {
+    const brand = document.getElementById('lp-brand-input').value.trim().toLowerCase();
+    const pin = document.getElementById('lp-pin-input').value.trim();
+    const err = document.getElementById('lp-gate-err');
+    const brandInput = document.getElementById('lp-brand-input');
+    const pinInput = document.getElementById('lp-pin-input');
+
+    brandInput.classList.remove('error');
+    pinInput.classList.remove('error');
+    err.style.display = 'none';
+
+    if (brand === BRAND.toLowerCase() && pin === PIN) {
+      sessionStorage.setItem(SESSION_KEY, 'granted');
+      gate.style.opacity = '0';
+      gate.style.transition = 'opacity 0.3s';
+      setTimeout(() => gate.remove(), 300);
+    } else {
+      brandInput.classList.add('error');
+      pinInput.classList.add('error');
+      err.style.display = 'block';
+    }
+  };
+
+  // Enter key support
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && document.getElementById('lp-gate')) {
+      window.lpGateSubmit();
+    }
+  });
+})();
