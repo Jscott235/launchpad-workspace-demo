@@ -2,10 +2,11 @@
   const BRAND = 'Business First';
   const PIN = '2612';
   const SESSION_KEY = 'lp_demo_access';
+  const TARGET_KEY = 'lp_demo_target';
 
-  if (sessionStorage.getItem(SESSION_KEY) === 'granted') return;
+  const stored = sessionStorage.getItem(SESSION_KEY);
+  if (stored === 'granted') return;
 
-  // Build gate overlay
   const style = document.createElement('style');
   style.textContent = `
     #lp-gate {
@@ -20,11 +21,11 @@
       border-radius: 16px;
       padding: 40px;
       width: 100%;
-      max-width: 380px;
+      max-width: 420px;
       margin: 20px;
     }
     #lp-gate-logo {
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 700;
       color: #6366f1;
       letter-spacing: 2px;
@@ -40,9 +41,35 @@
     #lp-gate-sub {
       font-size: 13px;
       color: #6b7280;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       line-height: 1.5;
     }
+    .lp-role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .lp-role-btn {
+      background: #0f0f1a;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 16px 12px;
+      color: #9ca3af;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .lp-role-btn:hover { border-color: #6366f1; color: #ffffff; }
+    .lp-role-btn.selected {
+      border-color: #6366f1;
+      background: rgba(99,102,241,0.15);
+      color: #ffffff;
+    }
+    .lp-role-btn .role-icon { font-size: 22px; margin-bottom: 6px; display: block; }
     #lp-gate label {
       display: block;
       font-size: 11px;
@@ -66,12 +93,8 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    #lp-gate input:focus {
-      border-color: #6366f1;
-    }
-    #lp-gate input.error {
-      border-color: #ef4444;
-    }
+    #lp-gate input:focus { border-color: #6366f1; }
+    #lp-gate input.error { border-color: #ef4444; }
     #lp-gate-btn {
       width: 100%;
       background: #6366f1;
@@ -108,7 +131,17 @@
     <div id="lp-gate-box">
       <div id="lp-gate-logo">Launchpad Digital Solutions</div>
       <div id="lp-gate-title">Demo Access</div>
-      <div id="lp-gate-sub">Enter your organisation name and access PIN to view this demonstration.</div>
+      <div id="lp-gate-sub">Select your role, then enter your organisation name and PIN.</div>
+      <div class="lp-role-grid">
+        <button class="lp-role-btn" data-role="admin" onclick="lpSelectRole('admin')">
+          <span class="role-icon">🏢</span>
+          Staff Portal
+        </button>
+        <button class="lp-role-btn" data-role="tenant" onclick="lpSelectRole('tenant')">
+          <span class="role-icon">👤</span>
+          Tenant Portal
+        </button>
+      </div>
       <label for="lp-brand-input">Organisation Name</label>
       <input type="text" id="lp-brand-input" placeholder="e.g. Business First" autocomplete="off">
       <label for="lp-pin-input">Access PIN</label>
@@ -119,6 +152,14 @@
     </div>
   `;
   document.body.appendChild(gate);
+
+  let selectedRole = null;
+
+  window.lpSelectRole = function(role) {
+    selectedRole = role;
+    document.querySelectorAll('.lp-role-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelector(`[data-role="${role}"]`).classList.add('selected');
+  };
 
   window.lpGateSubmit = function() {
     const brand = document.getElementById('lp-brand-input').value.trim().toLowerCase();
@@ -131,19 +172,33 @@
     pinInput.classList.remove('error');
     err.style.display = 'none';
 
+    if (!selectedRole) {
+      err.textContent = 'Please select a role first.';
+      err.style.display = 'block';
+      return;
+    }
+
     if (brand === BRAND.toLowerCase() && pin === PIN) {
       sessionStorage.setItem(SESSION_KEY, 'granted');
+      sessionStorage.setItem(TARGET_KEY, selectedRole);
       gate.style.opacity = '0';
       gate.style.transition = 'opacity 0.3s';
-      setTimeout(() => gate.remove(), 300);
+      setTimeout(() => {
+        gate.remove();
+        const dest = selectedRole === 'admin' ? 'admin.html' : 'tenant.html';
+        // Only redirect if we're on index
+        if (window.location.pathname === '/' || window.location.pathname.includes('index')) {
+          window.location.href = dest;
+        }
+      }, 300);
     } else {
       brandInput.classList.add('error');
       pinInput.classList.add('error');
+      err.textContent = 'Incorrect details. Please try again.';
       err.style.display = 'block';
     }
   };
 
-  // Enter key support
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && document.getElementById('lp-gate')) {
       window.lpGateSubmit();
